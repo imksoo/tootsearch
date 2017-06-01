@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+  <title>tootsearch</title>
+
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="js/bootstrap.min.js"></script>
+
+  <!-- Bootstrap -->
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+
+  <meta name="referrer" content="no-referrer">
+
+  <script type="text/javascript">
+    $(document).ready(
+      function () {
+        function add_toots(t) {
+          td_score = $('<td>', { class: "text-center" }).text(t._score)
+
+          td_date = $("<td>").text(t._source.created_at)
+
+          avatar_img = $("<div>", { class: "col-lg-2" }).append(
+            $("<img>", { style: "height:3em;width:auto", src: t._source.account.avatar, referrerpolicy: "no-referrer" })
+          )
+          avatar_txt = $("<div>", { class: "col-lg-10" }).append(
+            t._source.account.display_name
+          ).append(
+            $("<br>")
+            ).append(
+            $("<a>", { href: t._source.account.url, target: "_blank", referrerpolicy: "no-referrer" }).text(t._source.account.url)
+            )
+          td_avater = $("<td>").append(
+            avatar_img
+          ).append(
+            avatar_txt
+            )
+
+          td_content = $("<td>").append(
+            t._source.content.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g, '')
+          ).append(
+            $("<br>")
+            ).append(
+            $("<a>", { href: t._source.url, target: "_blank", referrerpolicy: "no-referrer" }).text(t._source.url)
+            )
+
+          tr_toot = $("<tr>").append(
+            td_score
+          ).append(
+            td_date
+            ).append(
+            td_avater
+            ).append(
+            td_content
+            )
+
+          $("#toots").append(tr_toot)
+        }
+        function remove_duplicated_toots() {
+          tbl = $("#toots tr")
+          dup = []
+          for (i = 1; i < tbl.length - 1; ++i) {
+            prev_user = tbl[i - 1].children[2].lastChild.firstChild.textContent
+            curr_user = tbl[i].children[2].lastChild.firstChild.textContent
+            prev_toot = tbl[i - 1].lastChild.firstChild.textContent
+            curr_toot = tbl[i].lastChild.firstChild.textContent
+            if (prev_user === curr_user && prev_toot === curr_toot) {
+              dup.push(tbl[i])
+            }
+          }
+          $.each(dup, function(i, t){ t.remove() })
+        }
+        function add_continue(from) {
+          tr_continue = $("<tr>", { id: "trContinue" }).append(
+            $("<td>", { colspan: 4 }).append(
+              $("<button>", { type: "button", class: "btn btn-default", id: "btnContinue", value: from }).text("Continue")
+            )
+          )
+          $("#toots").append(tr_continue)
+
+          $("#btnContinue").click(
+            function () {
+              from = Number($("#btnContinue").val())
+              $("#trContinue").remove()
+              search_toots(from, $("input[name='sort']:checked").val(), $("#q").val())
+            }
+          )
+        }
+
+        function search_toots(from, sort, query) {
+          $("#hits").text("検索中…10秒程度かかることもあるので気長にお待ち下さい。")
+          params = $.param({
+            from: from,
+            sort: sort,
+            q: query
+          })
+          $.getJSON("/api/v1/search?" + params, function (result) {
+            hits = result.hits.hits
+            hits.forEach(function (t) {
+              add_toots(t)
+            })
+            if (hits.length != 0) {
+              add_continue(from + hits.length)
+            }
+
+            history.replaceState('', '', "?" + params);
+            remove_duplicated_toots()
+
+            $("#hits").text("約 "+result.hits.total+" 件 ( "+result.took/1000+" 秒) ※重複有り")
+          })
+        }
+
+        function on_search_button() {
+          $("#toots").empty()
+          search_toots(0, $("input[name='sort']:checked").val(), $("#q").val())
+        }
+
+        $("#btnSearch").click(on_search_button)
+
+        $("#q").keypress(
+          function (e) {
+            if (e.which == 13) {
+              on_search_button()
+              return false
+            }
+          }
+        )
+
+        if (!($(location).attr('search') === "")) {
+          params = JSON.parse('{"' + decodeURI($(location).attr('search')).substring(1).replace(/&/g, "\",\"").replace(/=/g,"\":\"") + '"}')
+          if ( params.sort === "" ) { params.sort = "_score:desc" }
+          $("input[name='sort']").prop('checked',false)
+          $("input[name='sort'][value='"+params.sort.replace(/%3a/gi,":")+"']").prop('checked',true)
+
+          if ( ! (params.q === "") ) {
+            $("#q").val(params.q.replace(/%2b/gi, "+").replace(/\+/g, " ").replace(/%3a/gi, ":"))
+            on_search_button()
+          }
+        }
+      }
+    )
+  </script>
+
+</head>
+
+<body>
+  <div class="container">
+    <div class="header clearfix">
+      <nav>
+        <ul class="nav nav-pills pull-right">
+          <li role="presentation"><a href="#">Home</a></li>
+          <li role="presentation"><a href="#about">About</a></li>
+          <li role="presentation"><a href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="container">
+      <h1 class="text-muted"><a href="/">tootsearch</a></h1>
+        <form method="" action="">
+          <div class="input-group">
+            <input type="text" name="dummy" style="display:none;">
+            <input type="text" id="q" class="form-control">
+            <span class="input-group-btn"><button type="button" class="btn btn-default" id="btnSearch">Search</button></span>
+          </div>
+          <div class="input-group">
+            <label class="radio-inline">
+              <input type="radio" name="sort" value="_score:desc" checked>スコア順
+            </label>
+            <label class="radio-inline">
+              <input type="radio" name="sort" value="created_at:desc">時系列順
+            </label>
+            <label class="radio-inline">
+              <input type="radio" name="sort" value="reblogs_count:desc">ブースト数順
+            </label>
+            <label class="radio-inline">
+              <input type="radio" name="sort" value="favourites_count:desc">お気に入り数順
+            </label>
+          </div>
+        </form>
+    </div>
+    <div class="container">
+      <h3>Toots</h3><p id="hits"></p>
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="col-lg-1 text-center">Score</th>
+            <th class="col-lg-2">Date</th>
+            <th class="col-lg-3">Account</th>
+            <th class="col-lg-6">Toot</th>
+          </tr>
+        </thead>
+        <tbody id="toots">
+        </tbody>
+      </table>
+    </div>
+
+    <div id="about" class="container">
+      <hr>
+      <h3>About</h3>
+      <div class="col-lg-6">
+        <h4>What is tootsearch?</h4>
+        <p>This is a search service of Mastodon's toot contents.</p>
+        <h4>What engines are used for searching?</h4>
+        <p>Amazon ElasticSearch Service and Kinesis firehose.</p>
+        <h4>Indexed Mastodon instances.</h4>
+        <p>
+          <ul>
+            <li><a target="_blank" href="https://mstdn.jp/">mstdn.jp</a></li>
+            <li><a target="_blank" href="https://pawoo.net/">pawoo.net</a></li>
+            <li><a target="_blank" href="https://friends.nico/">friends.nico</a></li>
+            <li><a target="_blank" href="https://mstdn-workers.com/">mstdn-workers.com</a></li>
+            <li><a target="_blank" href="https://mastodon.yuritopia.net/">mastodon.yuritopia.net</a></li>
+            <li><a target="_blank" href="https://mastodon.chotto.moe/">mastodon.chotto.moe</a> ←作者のMastodon鯖</li>
+            <li><a target="_blank" href="https://jitakurack.chotto.moe/">jitakurack.chotto.moe</a> ←作者のMastodon鯖</li>
+          </ul>
+        </p>
+        <h4>Links</h4>
+        <ul>
+          <li><a target="_blank" href="http://mastodonsearch.jp/">マストドン検索ポータル</a></li>
+          <li><a target="_blank" href="http://i-stream.me/">mastodon image stream</a></li>
+          <li><a target="_blank" href="https://mstdn.imado.jp/">Mastodon/マストドン 検索</a></li>
+        </ul>
+      </div>
+      <div class="col-lg-6">
+        <h4>tootsearchとは</h4>
+        <p>Mastodonのトゥート内容を検索するサービスです。</p>
+        <h4>検索結果を絞り込みしたい場合は？</h4>
+        <p>本文だけに検索対象を絞りたい場合は、<code>content:"検索語句"</code>で検索すると良いです。<br>
+        同様に、ユーザ名で絞りたい場合は <code>account.username:"ユーザ名"</code>とすることも出来ます。</p>
+        <p>絞り込みに使える属性名は<a href="https://github.com/tootsuite/documentation/blob/master/Using-the-API/API.md#status">
+        Mastodon API overview &raquo; Entities &raquo; Status</a>を参照して下さい。</p>
+      </div>
+    </div>
+    <div id="contact" class="container">
+      <hr>
+      <footer class="footer">
+        <h3>Contact</h3>
+        <p>&copy; 2017 Kirino Minato
+          <a target="_blank" href="https://mastodon.chotto.moe/@imksoo">https://mastodon.chotto.moe/@imksoo</a>
+        </p>
+      </footer>
+    </div>
+
+  </div>
+</body>
+
+</html>

@@ -1,0 +1,44 @@
+# main.rb
+require 'sinatra'
+require 'sinatra/json'
+require 'sinatra/reloader'
+require 'elasticsearch'
+require 'dotenv/load'
+
+set :bind, '0.0.0.0'
+
+get '/api/v1/search' do
+  content_type :json, :charset => 'utf-8'
+
+  client = Elasticsearch::Client.new(hosts: [
+    {
+      host: ENV["ES_HOST"],
+      port: ENV["ES_PORT"]
+    }
+  ])
+  sort = params.fetch('sort', '_score:desc')
+  from = [params.fetch('from', 0).to_i, 0].max
+  size = [params.fetch('size', 50).to_i, 100].min
+  query = params.fetch('q', 'mastodon')
+
+  result = client.search sort: sort, from: from, size: size,
+    body: {
+      query: {
+        query_string: {
+          query: query,
+          default_field: "content",
+          default_operator: "and"
+        }
+      }
+    }
+
+  json result
+end
+
+get '/healthcheck' do
+  'OK ' + `hostname`.strip
+end
+
+get '/' do
+  send_file File.join(settings.public_folder, 'index.html')
+end
