@@ -239,12 +239,24 @@
         <h4>tootsearchとは</h4>
         <p>Mastodonのトゥート内容を検索するサービスです。</p>
         <h4>検索結果を絞り込みしたい場合は？</h4>
-        <p>本文だけに検索対象を絞りたい場合は、<code>content:"検索語句"</code>で検索すると良いです。<br>
-        同様に、ユーザ名で絞りたい場合は <code>account.username:"ユーザ名"</code>とすることも出来ます。</p>
-        <p>絞り込みに使える属性名は<a href="https://github.com/tootsuite/documentation/blob/master/Using-the-API/API.md#status">
+        <p>
+          検索文字列に以下のような演算子を指定して下さい。
+          <ul>
+            <li>ユーザアカウント名検索 <code>account.username:imksoo</code></li>
+            <li>ユーザ表示名検索 <code>account.display_name:"きりの"</code></li>
+            <li>プロフィール検索 <code>account.note:絵描き</code></li>
+            <li>セーフサーチ <code>sensitive:false</code><br>※逆にNSFWなトゥートを検索するときは<code>sensitive:true</code></li>
+            <li>画像/映像付きトゥート検索 <code>media_attachments.type:image</code><br>※typeはimage, video, gifvのいずれかを指定可</li>
+            <li>言語指定 <code>language:ja</code></li>
+          </ul>
+        </p>
+        <p>その他、絞り込みに使える属性名は<a href="https://github.com/tootsuite/documentation/blob/master/Using-the-API/API.md#status">
         Mastodon API overview &raquo; Entities &raquo; Status</a>を参照して下さい。</p>
+        <h4>AND/OR検索出来ませんか？</h4>
+        <p>空白区切りで文字列を複数並べるとAND検索になります。いずれかの文字列を含む検索を行いたい場合は、
+          <code>this OR that</code>のように大文字で<code>OR</code>を書いて下さい。</p>
         <h4>このサイトのソースコードは？</h4>
-        <p><a href="https://github.com/imksoo/tootsearch">https://github.com/imksoo/tootsearch</a>に置いてあります。</p>
+        <p><a href="https://github.com/imksoo/tootsearch">https://github.com/imksoo/tootsearch</a> に置いてあります。</p>
       </div>
     </div>
     <div id="contact" class="container">
