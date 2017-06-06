@@ -1,0 +1,9 @@
+#!/bin/bash
+
+cd $(dirname $0)
+. .env
+
+curator_cli --dry-run --host ${ES_HOST} --port ${ES_PORT} delete_indices --filter_list '[
+    { "filtertype": "age", "source": "name", "direction": "older", "timestring": "%Y-%m-%d-%H", "unit": "days", "unit_count": 3},
+    { "filtertype": "pattern", "kind": "prefix", "value": "mastodon" }
+  ]'

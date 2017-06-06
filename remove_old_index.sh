@@ -1,5 +1,6 @@
 #!/bin/bash
 
+cd $(dirname $0)
 . .env
 
 INDEX_LIST=$( curl -s "$ES_HOST:$ES_PORT/_cat/indices?index=mastodon-*" | awk '{print $3}' | sort )
