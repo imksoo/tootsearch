@@ -41,7 +41,7 @@
           ).append(
             $("<br>")
             ).append(
-            $("<a>", { href: t._source.account.url, target: "_blank", referrerpolicy: "no-referrer" }).text(t._source.account.url)
+            $("<a>", { href: t._source.account.url, target: "_blank", referrerpolicy: "no-referrer", style:"word-wrap: break-word;" }).text(t._source.account.url)
             )
           td_avater = $("<td>").append(
             avatar_img
@@ -59,7 +59,7 @@
           td_content.append(
             $("<br>")
             ).append(
-            $("<a>", { href: t._source.url, target: "_blank", referrerpolicy: "no-referrer" }).text(t._source.url)
+            $("<a>", { href: t._source.url, target: "_blank", referrerpolicy: "no-referrer", style: "word-wrap: break-word;" }).text(t._source.url)
             )
 
           tr_toot = $("<tr>").append(
