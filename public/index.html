@@ -50,7 +50,7 @@
             )
 
           td_content = $("<td>")
-          if ( t._source.sensitive ) {
+          if ( t._source.spoiler_text.length != 0 ) {
             td_content.append("CW: " + t._source.spoiler_text.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g, ''))
             td_content.append($("<br>")).append($("<span>", { style: "color:gray; background-color: gray;" }).append(t._source.content.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g, '')))
           } else {
