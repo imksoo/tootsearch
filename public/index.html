@@ -49,9 +49,14 @@
             avatar_txt
             )
 
-          td_content = $("<td>").append(
-            t._source.content.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g, '')
-          ).append(
+          td_content = $("<td>")
+          if ( t._source.sensitive ) {
+            td_content.append("CW: " + t._source.spoiler_text.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g, ''))
+            td_content.append($("<br>")).append($("<span>", { style: "color:gray; background-color: gray;" }).append(t._source.content.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g, '')))
+          } else {
+            td_content.append(t._source.content.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g, ''))
+          }
+          td_content.append(
             $("<br>")
             ).append(
             $("<a>", { href: t._source.url, target: "_blank", referrerpolicy: "no-referrer" }).text(t._source.url)
@@ -211,9 +216,13 @@
     <div class="container">
       <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
       <!-- tootsearch1 -->
-      <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-9314604578158757" data-ad-slot="9896771723" data-ad-format="auto"></ins>
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-9314604578158757"
+           data-ad-slot="9896771723"
+           data-ad-format="auto"></ins>
       <script>
-        (adsbygoogle = window.adsbygoogle || []).push({});
+      (adsbygoogle = window.adsbygoogle || []).push({});
       </script>
     </div>
 
