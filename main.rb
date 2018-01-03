@@ -9,7 +9,7 @@ set :bind, '0.0.0.0'
 
 get '/api/v1/search' do
   content_type :json, :charset => 'utf-8'
-  headers 'Access-Control-Allow-Origin' => 'https://wd-shiroma.github.io/'
+  headers 'Access-Control-Allow-Origin' => 'https://wd-shiroma.github.io'
 
   client = Elasticsearch::Client.new(hosts: [
     {
