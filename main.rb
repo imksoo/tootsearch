@@ -22,6 +22,9 @@ get '/api/v1/search' do
   size = [params.fetch('size', 50).to_i, 100].min
   query = params.fetch('q', 'mastodon')
 
+  # 2018/5/8 https://mstdn.jp/@tys/100020090139658680
+  query += ' -account.acct:@tys@mstdn.jp'
+
   result = client.search sort: sort, from: from, size: size,
     body: {
       query: {
