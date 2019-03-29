@@ -28,6 +28,8 @@ get '/api/v1/search' do
   query += ' -account.acct:@ebi@garakuta.online'
   # 2019/3/24 https://garakuta.online/@admin/101801466271694359
   query += ' -account.acct:@garakuta.online'
+  # 2019/3/30 https://mstdn.taiyaki.online/@Yellow/101827870211401011
+  query += ' -account.acct:@Yellow@mstdn.taiyaki.online'
 
   result = client.search sort: sort, from: from, size: size,
     body: {
